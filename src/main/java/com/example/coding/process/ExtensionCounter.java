@@ -31,7 +31,7 @@ public class ExtensionCounter {
         Map<String, Integer> extensionCounter = new HashMap<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
             MappingIterator<FileParser> fileParserMappingIterator = objectMapper.readValues(jsonFactory.createParser(bufferedReader), FileParser.class);
-            List<String> extensionList = fileParserMappingIterator.readAll().stream().map(FileParser::getFileName).distinct().map(fileName -> {
+            List<String> extensionList = fileParserMappingIterator.readAll().parallelStream().map(FileParser::getFileName).distinct().map(fileName -> {
                 int lastIndexOf = fileName.lastIndexOf(".");
                 if (lastIndexOf == -1) {
                     return ""; // empty extension
@@ -39,7 +39,7 @@ public class ExtensionCounter {
                 return fileName.substring(lastIndexOf + 1);
             }).collect(Collectors.toList());
             logger.info(" {} Valid Files", (long) extensionList.size());
-            extensionCounter = extensionList.stream()
+            extensionCounter = extensionList.parallelStream()
                     .collect(Collectors.toMap(ext -> ext, ext -> 1, Integer::sum));
             logger.info("Final List {}", extensionCounter);
         } catch (JsonParseException jspe) {
